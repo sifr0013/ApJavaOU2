@@ -1,3 +1,4 @@
+import Controller.RadioInfoController;
 import View.MainWindow;
 
 import javax.swing.*;
@@ -11,13 +12,14 @@ import java.time.LocalDateTime;
 public class RadioInfo {
     public static void main(String[] args) {
 
-        testGUI();
+        //testGUI();
+        RadioInfoController ric = new RadioInfoController();
     }
 
 
 
 
-    public static void testGUI(){
+    /*public static void testGUI(){
         String title = "Test title";
         String[] channelNames = {"Channel 1","Channel 2","Channel 3"};
         int[] channelIds = {1,2,3};
@@ -43,5 +45,5 @@ public class RadioInfo {
         javax.swing.SwingUtilities.invokeLater(() -> {
 
         });
-    }
+    }*/
 }

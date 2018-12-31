@@ -36,7 +36,7 @@ public class MainWindow implements ActionListener{
         Container container = new Container();
         container.setLayout(new BorderLayout());
         container.add(programTable.getTableHeader(), BorderLayout.PAGE_START);
-        container.add(programTable, BorderLayout.CENTER);
+        container.add(scrollPane, BorderLayout.CENTER);
 
         frame.add(container);
 

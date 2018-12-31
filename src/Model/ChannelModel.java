@@ -7,6 +7,7 @@ import java.net.URL;
  * Created by Simon on 2018-12-24.
  */
 public class ChannelModel {
+
     private URL imageURL;
     private URL imageTemplateURL;
     private Color color;
@@ -23,6 +24,50 @@ public class ChannelModel {
     public ChannelModel(int id, String channelName){
         this.id = id;
         this.channelName = channelName;
+    }
+
+    public URL getImageURL() {
+        return imageURL;
+    }
+
+    public URL getImageTemplateURL() {
+        return imageTemplateURL;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public URL getSiteURL() {
+        return siteURL;
+    }
+
+    public LiveAudioModel getLiveAudioModel() {
+        return liveAudioModel;
+    }
+
+    public URL getScheduleURL() {
+        return scheduleURL;
+    }
+
+    public String getChannelType() {
+        return channelType;
+    }
+
+    public String getXmltvid() {
+        return xmltvid;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getChannelName() {
+        return channelName;
     }
 
     public void setLiveAudioModel(LiveAudioModel lam) {
@@ -61,6 +106,9 @@ public class ChannelModel {
         this.xmltvid = xmltvid;
     }
 
+    /**
+     * For testing purposes.
+     */
     public void printOut(){
         System.out.println("ID: "+id);
         System.out.println("Channelname: "+channelName);

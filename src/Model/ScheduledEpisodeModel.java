@@ -15,12 +15,57 @@ public class ScheduledEpisodeModel {
     private LocalDateTime endTimeUTC;
     private int programID;
     private String programName;
+
     private int channelID;
     private String channelName;
     private URL imageURL;
     private URL imageTemplateURL;
 
     public ScheduledEpisodeModel(){}
+
+    public int getEpisodeID() {
+        return episodeID;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getStartTimeUTC() {
+        return startTimeUTC;
+    }
+
+    public LocalDateTime getEndTimeUTC() {
+        return endTimeUTC;
+    }
+
+    public int getProgramID() {
+        return programID;
+    }
+
+    public String getProgramName() {
+        return programName;
+    }
+
+    public int getChannelID() {
+        return channelID;
+    }
+
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public URL getImageURL() {
+        return imageURL;
+    }
+
+    public URL getImageTemplateURL() {
+        return imageTemplateURL;
+    }
 
     public void setChannelID(int channelID) {
         this.channelID = channelID;
