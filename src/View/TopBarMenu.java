@@ -30,6 +30,7 @@ public class TopBarMenu extends JMenuBar {
         updateMenu(channelNames,channelIds,selectingChannelInMenu);
     }
 
+    // TODO: 2019-01-08 DELA UPP MENYN I FLERA SMÅ MENYER. ALLA KANALER FÅR INTE PLATS PÅ SKÄRMEN.
     public void updateMenu(String[] channelNames, int[] channelIds, ActionListener selectingChannelInMenu){
         this.remove(this.getMenu(0));
         this.add(new JMenu("Channel Menu"),0);
@@ -42,7 +43,6 @@ public class TopBarMenu extends JMenuBar {
         this.revalidate();
     }
 
-    // TODO: 2019-01-07 Lägg till så att det kommer upp en popup när man trycker på programinfo.
     public static void programInfoButtonListener(ActionListener actionListener){
         programInfo.addActionListener(actionListener);
     }
