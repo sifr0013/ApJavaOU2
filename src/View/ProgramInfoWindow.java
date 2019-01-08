@@ -11,7 +11,7 @@ import java.net.URL;
  */
 public class ProgramInfoWindow extends JOptionPane{
     public ProgramInfoWindow(String programName, String description, URL imageURL){
-        Image image = null;
+        Image image;
         try {
             image = ImageIO.read(imageURL);
             ImageIcon icon = new ImageIcon(image);
