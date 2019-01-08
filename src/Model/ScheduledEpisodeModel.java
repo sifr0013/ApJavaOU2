@@ -2,7 +2,6 @@ package Model;
 
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * Created by Simon on 2018-12-24.
@@ -115,6 +114,7 @@ public class ScheduledEpisodeModel {
         System.out.println("Episode id: "+episodeID);
         System.out.println("Start time: "+startTimeUTC);
         System.out.println("End time: "+endTimeUTC);
+        System.out.println("Program name: "+programName);
         System.out.println("-----------------------------");
     }
 }

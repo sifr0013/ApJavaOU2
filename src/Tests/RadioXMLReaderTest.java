@@ -25,7 +25,7 @@ public class RadioXMLReaderTest {
     private RadioXMLReader rxmlr;
     private final String CHANNEL_URL = "http://api.sr.se/api/v2/channels/";
     private final String SCHEDULED_EPISODE_URL = "http://api.sr.se/api/v2/scheduledepisodes";
-    private final int CHANNEL_ID = 164;
+    private final int CHANNEL_ID = 132;
 
     @Before
     public void startUp() throws IOException, SAXException, ParserConfigurationException {

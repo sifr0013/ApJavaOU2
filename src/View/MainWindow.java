@@ -1,6 +1,7 @@
 package View;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,12 +9,13 @@ import java.awt.event.ActionListener;
 /**
  * Created by Simon on 2018-12-23.
  */
-public class MainWindow implements ActionListener{
+public class MainWindow{
 
     private JFrame frame;
     private JTable programTable;
     private TopBarMenu topBarMenu;
     private JScrollPane scrollPane;
+    private DefaultTableModel mtm;
 
     public MainWindow(String title, String[] channelNames, int[] channelIds,
                       ActionListener selectingChannelInMenu,
@@ -30,15 +32,16 @@ public class MainWindow implements ActionListener{
                 selectingChannelInMenu);
         frame.setJMenuBar(topBarMenu);
 
-        programTable = new JTable(tableData, columnNames);
+        programTable = new JTable();
+
+        mtm = new DefaultTableModel(0,0);
+        programTable.setModel(mtm);
+        mtm.setColumnIdentifiers(columnNames);
+        mtm.addRow(new Object[]{ "Loading", "Loading", "Loading" });
+        updateTable(tableData);
+
         scrollPane = new JScrollPane(programTable);
-
-        Container container = new Container();
-        container.setLayout(new BorderLayout());
-        container.add(programTable.getTableHeader(), BorderLayout.PAGE_START);
-        container.add(scrollPane, BorderLayout.CENTER);
-
-        frame.add(container);
+        frame.add(scrollPane);
 
         frame.setSize(900,600);
         frame.setLocationRelativeTo(null);
@@ -48,8 +51,32 @@ public class MainWindow implements ActionListener{
         return frame;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    public void updateButtonListener(ActionListener actionListener){
+        TopBarMenu.updateButtonListener(actionListener);
+    }
 
+    public void programInfoButtonListener(ActionListener actionListener){
+        TopBarMenu.programInfoButtonListener(actionListener);
+    }
+
+
+    public void updateTable(Object[][] tableData){
+        mtm.setRowCount(0);
+        for (int i = 0; i < tableData.length; i++) {
+            mtm.addRow(new Object[]{tableData[i][0],tableData[i][1],tableData[i][2]});
+        }
+    }
+
+    public Object[] getSelectedTableRow() throws ArrayIndexOutOfBoundsException{
+        int row = programTable.getSelectedRow();
+        return new Object[]{programTable.getValueAt(row,0),
+                programTable.getValueAt(row,1),
+                programTable.getValueAt(row,2)};
+    }
+
+    public void setTitle(String newTitle){
+        frame.setTitle(newTitle);
+        frame.validate();
+        frame.repaint();
     }
 }

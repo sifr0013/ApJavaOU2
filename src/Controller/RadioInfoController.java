@@ -4,32 +4,35 @@ import Model.ChannelModel;
 import Model.RadioXMLReader;
 import Model.ScheduledEpisodeModel;
 import View.MainWindow;
-import com.sun.xml.internal.bind.v2.TODO;
+import View.ProgramInfoWindow;
 import org.xml.sax.SAXException;
 
+import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.*;
 
 /**
  * Created by Simon on 2018-12-24.
  */
-public class RadioInfoController implements Runnable{
+public class RadioInfoController{
 
-    private volatile boolean running = true;
-    private volatile boolean paused = false;
-    private final Object pauseLock = new Object();
     private static final String CHANNELS_URL = "http://api.sr.se/api/v2/channels/";
     private static final String EPISODES_URL = "http://api.sr.se/api/v2/scheduledepisodes";
     private ArrayList<ChannelModel> channels;
+    private ArrayList<ScheduledEpisodeModel> episodes;
     private String[] channelNames;
     private int[] channelIds;
     private final String[] TABLE_HEADERS = {"Program","Start time","End time"};
-    private Object[][] tableData;
     private ChannelModel currentChannel;
+    private MainWindow mw;
 
     public RadioInfoController(){
         try {
@@ -50,17 +53,52 @@ public class RadioInfoController implements Runnable{
 
     private void runGUI(){
 
-        ActionListener channelButtonListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-            }
-        };
+        ActionListener channelButtonListener = menuItemActionListener();
 
         try {
-            MainWindow mw = new MainWindow(currentChannel.getChannelName(),
+            mw = new MainWindow(currentChannel.getChannelName(),
                     channelNames,channelIds,channelButtonListener,TABLE_HEADERS,
                     getTableData(currentChannel.getId(),LocalDateTime.now()));
+
+
+            javax.swing.SwingUtilities.invokeLater(() ->{
+
+                mw.updateButtonListener(e -> {
+                    try {
+                        mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
+                    } catch (ParserConfigurationException | IOException |
+                            IllegalAccessException | SAXException e1) {
+                        e1.printStackTrace();
+                    }
+                });
+
+                mw.programInfoButtonListener(e -> {
+                    try{
+                        Object[] selectedProgram = mw.getSelectedTableRow();
+                        LocalDateTime startTime =
+                                (LocalDateTime) selectedProgram[1];
+                        LocalDateTime endTime =
+                                (LocalDateTime) selectedProgram[2];
+
+                        episodes.forEach((episode)->{
+                            if (episode.getProgramName()==selectedProgram[0]&&
+                                    episode.getEndTimeUTC()==endTime&&
+                                    episode.getStartTimeUTC()==startTime){
+                                ProgramInfoWindow popup = new ProgramInfoWindow(
+                                        episode.getProgramName(),
+                                        episode.getDescription(),
+                                        episode.getImageURL());
+                            }
+                        });
+                    } catch (ArrayIndexOutOfBoundsException ignored){}
+                });
+
+            });
+
+            startBackgroundUpdate();
+
+
+
         } catch (ParserConfigurationException | IOException |
                 IllegalAccessException | SAXException e) {
             e.printStackTrace();
@@ -68,43 +106,22 @@ public class RadioInfoController implements Runnable{
 
     }
 
-
-    @Override
-    public void run() {
-        Thread updateDataThread = new Thread(() -> {
-            while (running) {
-                synchronized (pauseLock) {
-                    if (!running) {
-                        break;
-                    }
-                    if (paused) {
-                        try{
-                            pauseLock.wait(); //ISTÄLLET FÖR ATT PAUSA, GÖR EN UPPDATERING.
-                        } catch (InterruptedException e){
-                            break;
-                        }
-                        if (!running) {
-                            break;
-                        }
-                    }
-                }
-
-
+    /**
+     * Private method to do hourly updates of the tabledata. Runs in the background.
+     * Thread safe.
+     */
+    private void startBackgroundUpdate() {
+        ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+        ScheduledFuture sf = ses.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    updateData(); //Uppdatera all data i tabellen. Detta ska ske:
-                                    // Varje timme, när någon trycker på uppdatera,
-                                    // eller när man byter kanal.
-                } catch (Exception e){}//Lägg till lämplig exception
-                // TODO: 2018-12-28 GUI .redraw() eller något liknande
-
-                try {
-                    Thread.sleep(1000); // GÖR SÅ MAN TAR TID
-                } catch (InterruptedException e) {
+                    mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
+                } catch (ParserConfigurationException | IOException | IllegalAccessException | SAXException e) {
                     e.printStackTrace();
                 }
             }
-        });
-        updateDataThread.start();
+        },1,1,TimeUnit.HOURS);
     }
 
     private Object[][] getTableData(int channelId, LocalDateTime ldt)
@@ -112,19 +129,34 @@ public class RadioInfoController implements Runnable{
             IllegalAccessException {
 
         RadioXMLReader rxmlr = new RadioXMLReader();
-        ArrayList<ScheduledEpisodeModel> episodes = rxmlr.
+        episodes = rxmlr.
                 getScheduledEpisodeModels(EPISODES_URL,channelId,ldt,true);
         Object[][] tableData = new Object[episodes.size()][3];
 
         for (int i = 0; i < episodes.size(); i++) {
-            tableData[i][0] = episodes.get(i).getProgramName();
-            tableData[i][1] = episodes.get(i).getStartTimeUTC();
-            tableData[i][2] = episodes.get(i).getEndTimeUTC();
+            ScheduledEpisodeModel temp = episodes.get(i);
+            LocalDateTime now = LocalDateTime.now();
+            if (temp.getEndTimeUTC().isBefore(now)){ //Programmet har slutat
+                tableData[i][0] = temp.getProgramName()+" (SLUTAT)";
+            } else if ((temp.getEndTimeUTC().isEqual(now) ||
+                    temp.getEndTimeUTC().isAfter(now)) &&
+                    (temp.getStartTimeUTC().isEqual(now) ||
+                            temp.getStartTimeUTC().isBefore(now))) { //Programmet körs
+                tableData[i][0] = temp.getProgramName()+" (SPELAR NU)";
+            } else { //Programmet har inte körts
+                tableData[i][0] = temp.getProgramName();
+            }
+
+            tableData[i][1] = temp.getStartTimeUTC();
+            tableData[i][2] = temp.getEndTimeUTC();
         }
 
         return tableData;
     }
 
+    /**
+     * Used to update the menu items. Called one time.
+     */
     private void updateChannelInfo(){
         channelNames = new String[channels.size()];
         channelIds = new int[channels.size()];
@@ -136,8 +168,31 @@ public class RadioInfoController implements Runnable{
         }
     }
 
-    private void updateData(){
+    private ActionListener menuItemActionListener(){
+        ActionListener actionListener = e -> {
+            int selectedChannelId = (Integer)((JMenuItem)e.getSource()).getClientProperty("channelid");
+            updateCurrentChannel(selectedChannelId);
+            try {
+                mw.setTitle(currentChannel.getChannelName());
+                mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
+            } catch (ParserConfigurationException | IOException |
+                    IllegalAccessException | SAXException e1) {
+                e1.printStackTrace();
+            }
+        };
+        return actionListener;
+    }
 
+    /**
+     * Private method to update the current channel of the program to the selected ID.
+     * @param channelId - The selected ID.
+     */
+    private void updateCurrentChannel(int channelId){
+        channels.forEach(channelModel -> {
+            if (channelModel.getId() == channelId){
+                currentChannel = channelModel;
+            }
+        });
     }
 
 }

@@ -10,8 +10,8 @@ import java.awt.event.KeyEvent;
 public class TopBarMenu extends JMenuBar {
 
     JMenu channelMenu;
-    JButton programInfo;
-    JButton update;
+    static JButton programInfo;
+    static JButton update;
 
     public TopBarMenu(String[] channelNames, int[] channelIds, ActionListener selectingChannelInMenu){
         channelMenu = new JMenu("Channel Menu....");
@@ -42,11 +42,12 @@ public class TopBarMenu extends JMenuBar {
         this.revalidate();
     }
 
-    public void setProgramInfoButtonListener(ActionListener actionListener){
+    // TODO: 2019-01-07 Lägg till så att det kommer upp en popup när man trycker på programinfo.
+    public static void programInfoButtonListener(ActionListener actionListener){
         programInfo.addActionListener(actionListener);
     }
 
-    public void setUpdateButtonListener(ActionListener actionListener){
+    public static void updateButtonListener(ActionListener actionListener) {
         update.addActionListener(actionListener);
     }
 }

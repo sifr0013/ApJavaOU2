@@ -160,7 +160,10 @@ public class RadioXMLReader {
                                 case "program":
                                     NamedNodeMap programAttributes = tempChildNode.getAttributes();
                                     sem.setProgramID(Integer.parseInt(programAttributes.item(0).getNodeValue()));
-                                    sem.setProgramName(programAttributes.item(1).getNodeValue());
+                                    try{
+                                        sem.setProgramName(programAttributes.item(1).getNodeValue());
+                                    } catch (NullPointerException e){ sem.setProgramName("");
+                                    }
                                     break;
                                 case "channel":
                                     NamedNodeMap channelAttributes = tempChildNode.getAttributes();
