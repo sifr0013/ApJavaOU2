@@ -9,23 +9,23 @@ import org.xml.sax.SAXException;
 
 import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.*;
 
 /**
  * Created by Simon on 2018-12-24.
+ *
+ * Public class to create the controller for the RadioInfo program.
  */
 public class RadioInfoController{
 
-    private static final String CHANNELS_URL = "http://api.sr.se/api/v2/channels/";
-    private static final String EPISODES_URL = "http://api.sr.se/api/v2/scheduledepisodes";
+    private static final String CHANNELS_URL =
+            "http://api.sr.se/api/v2/channels/";
+    private static final String EPISODES_URL =
+            "http://api.sr.se/api/v2/scheduledepisodes";
     private ArrayList<ChannelModel> channels;
     private ArrayList<ScheduledEpisodeModel> episodes;
     private String[] channelNames;
@@ -34,6 +34,10 @@ public class RadioInfoController{
     private ChannelModel currentChannel;
     private MainWindow mw;
 
+    /**
+     * The constructor for a RadioInfoController. Will create a GUI and fill it
+     * with data.
+     */
     public RadioInfoController(){
         try {
             RadioXMLReader rxmlr = new RadioXMLReader();
@@ -65,7 +69,8 @@ public class RadioInfoController{
 
                 mw.updateButtonListener(e -> {
                     try {
-                        mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
+                        mw.updateTable(getTableData(currentChannel.getId(),
+                                LocalDateTime.now()));
                     } catch (ParserConfigurationException | IOException |
                             IllegalAccessException | SAXException e1) {
                         e1.printStackTrace();
@@ -81,7 +86,8 @@ public class RadioInfoController{
                                 (LocalDateTime) selectedProgram[2];
 
                         episodes.forEach((episode)->{
-                            if (episode.getProgramName()==selectedProgram[0]&&
+                            if (((String)selectedProgram[0]).
+                                    startsWith(episode.getProgramName())&&
                                     episode.getEndTimeUTC()==endTime&&
                                     episode.getStartTimeUTC()==startTime){
                                 ProgramInfoWindow popup = new ProgramInfoWindow(
@@ -97,8 +103,6 @@ public class RadioInfoController{
 
             startBackgroundUpdate();
 
-
-
         } catch (ParserConfigurationException | IOException |
                 IllegalAccessException | SAXException e) {
             e.printStackTrace();
@@ -107,17 +111,21 @@ public class RadioInfoController{
     }
 
     /**
-     * Private method to do hourly updates of the tabledata. Runs in the background.
+     * Private method to do hourly updates of the tabledata.
+     * Runs in the background.
      * Thread safe.
      */
     private void startBackgroundUpdate() {
-        ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService ses = Executors.
+                newSingleThreadScheduledExecutor();
         ScheduledFuture sf = ses.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
-                    mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
-                } catch (ParserConfigurationException | IOException | IllegalAccessException | SAXException e) {
+                    mw.updateTable(getTableData(currentChannel.getId(),
+                            LocalDateTime.now()));
+                } catch (ParserConfigurationException | IOException |
+                        IllegalAccessException | SAXException e) {
                     e.printStackTrace();
                 }
             }
@@ -136,14 +144,14 @@ public class RadioInfoController{
         for (int i = 0; i < episodes.size(); i++) {
             ScheduledEpisodeModel temp = episodes.get(i);
             LocalDateTime now = LocalDateTime.now();
-            if (temp.getEndTimeUTC().isBefore(now)){ //Programmet har slutat
+            if (temp.getEndTimeUTC().isBefore(now)){
                 tableData[i][0] = temp.getProgramName()+" (SLUTAT)";
             } else if ((temp.getEndTimeUTC().isEqual(now) ||
                     temp.getEndTimeUTC().isAfter(now)) &&
                     (temp.getStartTimeUTC().isEqual(now) ||
-                            temp.getStartTimeUTC().isBefore(now))) { //Programmet körs
+                            temp.getStartTimeUTC().isBefore(now))) {
                 tableData[i][0] = temp.getProgramName()+" (SPELAR NU)";
-            } else { //Programmet har inte körts
+            } else {
                 tableData[i][0] = temp.getProgramName();
             }
 
@@ -170,11 +178,13 @@ public class RadioInfoController{
 
     private ActionListener menuItemActionListener(){
         ActionListener actionListener = e -> {
-            int selectedChannelId = (Integer)((JMenuItem)e.getSource()).getClientProperty("channelid");
+            int selectedChannelId = (Integer)((JMenuItem)e.getSource()).
+                    getClientProperty("channelid");
             updateCurrentChannel(selectedChannelId);
             try {
                 mw.setTitle(currentChannel.getChannelName());
-                mw.updateTable(getTableData(currentChannel.getId(),LocalDateTime.now()));
+                mw.updateTable(getTableData(currentChannel.getId(),
+                        LocalDateTime.now()));
             } catch (ParserConfigurationException | IOException |
                     IllegalAccessException | SAXException e1) {
                 e1.printStackTrace();
@@ -184,7 +194,8 @@ public class RadioInfoController{
     }
 
     /**
-     * Private method to update the current channel of the program to the selected ID.
+     * Private method to update the current channel of the program to the
+     * selected ID.
      * @param channelId - The selected ID.
      */
     private void updateCurrentChannel(int channelId){
@@ -194,5 +205,4 @@ public class RadioInfoController{
             }
         });
     }
-
 }

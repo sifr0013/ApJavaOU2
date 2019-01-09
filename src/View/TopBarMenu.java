@@ -6,16 +6,26 @@ import java.awt.event.KeyEvent;
 
 /**
  * Created by Simon on 2018-12-24.
+ *
+ * Public class for creating a TopBarMenu.
+ * Used to create and fill the JMenuBar of the GUI.
  */
 public class TopBarMenu extends JMenuBar {
 
-    JMenu channelMenu;
-    static JButton programInfo;
-    static JButton update;
+    private static JButton programInfo;
+    private static JButton update;
 
+    /**
+     * Public constructor for the TopBarMenu.
+     * @param channelNames - String[] of the channel names.
+     *                     Used for filling the dropdown menu's with the
+     *                     channels names.
+     * @param channelIds - int[] of the channels id's.
+     *                   Used for putting the clients properties of the
+     *                   menu items.
+     * @param selectingChannelInMenu - ActionListener for the menu items.
+     */
     public TopBarMenu(String[] channelNames, int[] channelIds, ActionListener selectingChannelInMenu){
-        channelMenu = new JMenu("Channel Menu....");
-        channelMenu.setMnemonic(KeyEvent.VK_N);
 
         programInfo = new JButton("Program Info");
         programInfo.setMnemonic(KeyEvent.VK_N);
@@ -23,30 +33,47 @@ public class TopBarMenu extends JMenuBar {
         update = new JButton("Update Now");
         update.setMnemonic(KeyEvent.VK_N);
 
-        this.add(channelMenu);
         this.add(programInfo);
         this.add(update);
 
-        updateMenu(channelNames,channelIds,selectingChannelInMenu);
+        updateMenues(channelNames,channelIds,selectingChannelInMenu);
     }
 
-    // TODO: 2019-01-08 DELA UPP MENYN I FLERA SMÅ MENYER. ALLA KANALER FÅR INTE PLATS PÅ SKÄRMEN.
-    public void updateMenu(String[] channelNames, int[] channelIds, ActionListener selectingChannelInMenu){
-        this.remove(this.getMenu(0));
-        this.add(new JMenu("Channel Menu"),0);
+    private void updateMenues(String[] channelNames, int[] channelIds, ActionListener selectingChannelInMenu){
+        JMenu channelMenu1 = new JMenu("Channel Menu (1)");
+        channelMenu1.setMnemonic(KeyEvent.VK_N);
+
+        JMenu channelMenu2 = new JMenu("Channel Menu (2)");
+        channelMenu2.setMnemonic(KeyEvent.VK_N);
+
+        this.add(channelMenu1);
+        this.add(channelMenu2);
+
         for (int i = 0; i < channelNames.length; i++) {
             JMenuItem tempMenuItem = new JMenuItem(channelNames[i]);
             tempMenuItem.putClientProperty("channelid",channelIds[i]);
             tempMenuItem.addActionListener(selectingChannelInMenu);
-            this.getMenu(0).add(tempMenuItem);
+            if (i%2 == 0){
+                this.getMenu(this.getComponentIndex(channelMenu1)).add(tempMenuItem);
+            } else{
+                this.getMenu(this.getComponentIndex(channelMenu2)).add(tempMenuItem);
+            }
         }
         this.revalidate();
     }
 
+    /**
+     * Public method for setting the ProgramInfoButton's actionlistener.
+     * @param actionListener - ActionListener for the ProgramInfoButton.
+     */
     public static void programInfoButtonListener(ActionListener actionListener){
         programInfo.addActionListener(actionListener);
     }
 
+    /**
+     * Public method for setting the UpdateButton's actionlistener.
+     * @param actionListener - ActionListener for the UpdateButton.
+     */
     public static void updateButtonListener(ActionListener actionListener) {
         update.addActionListener(actionListener);
     }
